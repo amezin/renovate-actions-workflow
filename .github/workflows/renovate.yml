@@ -36,12 +36,6 @@ jobs:
             fi
           fi
 
-      - id: cache-restore
-        uses: actions/cache/restore@v4
-        with:
-          path: cache
-          key: renovate
-
       - run: renovate
         env:
           LOG_LEVEL: debug
@@ -51,9 +45,3 @@ jobs:
           RENOVATE_REPORT_TYPE: logging
           RENOVATE_PLATFORM_COMMIT: 'true'
           RENOVATE_BASE_DIR: ${{ github.workspace }}
-          RENOVATE_CACHE_DIR: ${{ github.workspace }}/cache
-
-      - uses: actions/cache/save@v4
-        with:
-          path: cache
-          key: ${{ steps.cache-restore.outputs.cache-primary-key }}
