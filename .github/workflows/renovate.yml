@@ -27,14 +27,19 @@ jobs:
       options: -u 0:0
 
     steps:
-      - id: config
-        run: |
+      - run: |
           if [ -n "$GITHUB_HEAD_REF" ]; then
             echo "RENOVATE_DRY_RUN=full" >>"$GITHUB_ENV"
             if [ "$(jq .pull_request.base.repo.node_id "$GITHUB_EVENT_PATH")" = "$(jq .pull_request.head.repo.node_id "$GITHUB_EVENT_PATH")" ]; then
               echo "RENOVATE_BASE_BRANCHES=$GITHUB_HEAD_REF" >>"$GITHUB_ENV"
-              echo "RENOVATE_USE_BASE_BRANCH_CONFIG=merge" >>"$GITHUB_ENV"
+            else
+              echo "RENOVATE_BASE_BRANCHES=$GITHUB_BASE_REF" >>"$GITHUB_ENV"
             fi
+            echo "RENOVATE_USE_BASE_BRANCH_CONFIG=merge" >>"$GITHUB_ENV"
+          elif [ "$GITHUB_REF_NAME" != "$(jq .repository.default_branch "$GITHUB_EVENT_PATH")" ]; then
+            echo "RENOVATE_DRY_RUN=full" >>"$GITHUB_ENV"
+            echo "RENOVATE_BASE_BRANCHES=$GITHUB_REF_NAME" >>"$GITHUB_ENV"
+            echo "RENOVATE_USE_BASE_BRANCH_CONFIG=merge" >>"$GITHUB_ENV"
           fi
 
       - id: cache-restore
