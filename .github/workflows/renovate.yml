@@ -31,7 +31,7 @@ jobs:
         run: |
           if [ -n "$GITHUB_HEAD_REF" ]; then
             echo "RENOVATE_DRY_RUN=full" >>"$GITHUB_ENV"
-            if [ "$(jq .pull_request.base.repo.node_id "$GITHUB_EVENT")" = "$(jq .pull_request.head.repo.node_id "$GITHUB_EVENT")" ]; then
+            if [ "$(jq .pull_request.base.repo.node_id "$GITHUB_EVENT_PATH")" = "$(jq .pull_request.head.repo.node_id "$GITHUB_EVENT_PATH")" ]; then
               echo "RENOVATE_BASE_BRANCHES=$GITHUB_HEAD_REF" >>"$GITHUB_ENV"
               echo "RENOVATE_USE_BASE_BRANCH_CONFIG=merge" >>"$GITHUB_ENV"
             fi
