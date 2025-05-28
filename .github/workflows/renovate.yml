@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/renovatebot/renovate:40.33.8
+      options: -u 0:0
 
     steps:
       - id: config
