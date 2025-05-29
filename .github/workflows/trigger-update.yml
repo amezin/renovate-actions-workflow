@@ -1,0 +1,20 @@
+name: renovate
+
+on:
+  workflow_dispatch:
+  pull_request_target:
+    types:
+      - edited
+  issues:
+    types:
+      - edited
+  schedule:
+    - cron: '0/30 * * * *'
+
+jobs:
+  reusable:
+    uses: ./.github/workflows/update.yml
+    with:
+      app-id: 1336158
+    secrets:
+      private-key: ${{ secrets.SELF_HOSTED_RENOVATE_KEY }}

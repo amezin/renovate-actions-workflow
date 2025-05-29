@@ -1,0 +1,76 @@
+name: renovate-dry-run
+
+on:
+  workflow_call:
+    inputs:
+      app-id:
+        type: number
+        required: true
+      branch-prefix:
+        type: string
+        default: renovate/
+      dependency-dashboard-title:
+        type: string
+        default: Dependency Dashboard
+    secrets:
+      private-key:
+        required: true
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-24.04
+    container:
+      image: ghcr.io/renovatebot/renovate:40.33.8
+      options: -u 0:0 --init
+
+    if: >-
+      !github.event.pull_request || (
+        !startsWith(github.head_ref, inputs.branch-prefix) &&
+        (github.event_name == 'pull_request_target') == (github.event.pull_request.base.repo.node_id != github.event.pull_request.head.repo.node_id)
+      )
+
+    steps:
+      - uses: actions/cache@v4
+        with:
+          path: cache
+          key: renovate
+
+      - id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ inputs.app-id }}
+          private-key: ${{ secrets.private-key }}
+          permission-checks: read
+          permission-contents: read
+          permission-workflows: read
+          permission-statuses: read
+          permission-issues: read
+          permission-pull-requests: read
+          permission-administration: read
+          permission-vulnerability-alerts: read
+          permission-members: read
+          permission-metadata: read
+
+      - run: >-
+          renovate
+          "--branch-prefix=$RENOVATE_BRANCH_PREFIX"
+          "--dependency-dashboard-title=$RENOVATE_DEPENDENCY_DASHBOARD_TITLE"
+          "--use-base-branch-config=$RENOVATE_USE_BASE_BRANCH_CONFIG"
+          --dry-run=full
+          "$RENOVATE_REPOSITORIES"
+
+        env:
+          LOG_LEVEL: debug
+          FORCE_COLOR: '2'
+          GITHUB_COM_TOKEN: ${{ steps.token.outputs.token }}
+          RENOVATE_TOKEN: ${{ steps.token.outputs.token }}
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
+          RENOVATE_REPORT_TYPE: logging
+          RENOVATE_BASE_DIR: ${{ github.workspace }}
+          RENOVATE_CACHE_DIR: ${{ github.workspace }}/cache
+          RENOVATE_BRANCH_PREFIX: ${{ inputs.branch-prefix }}
+          RENOVATE_DEPENDENCY_DASHBOARD_TITLE: ${{ inputs.dependency-dashboard-title }}
+          RENOVATE_BASE_BRANCHES: >-
+            ${{ (github.event.pull_request.base.repo.node_id == github.event.pull_request.head.repo.node_id && github.head_ref || github.base_ref) || github.ref_name }}
+          RENOVATE_USE_BASE_BRANCH_CONFIG: >-
+            ${{ github.event.pull_request.base.repo.node_id == github.event.pull_request.head.repo.node_id && 'merge' || 'none' }}
