@@ -32,8 +32,22 @@ jobs:
       image: ghcr.io/renovatebot/renovate:40.33.8
       options: -u 0:0 --init
 
+    # If dry-run (github_ref != default branch):
+    # - Run only for pull requests from the same repository (Renovate needs a real base branch anyway)
+    # - Or events not related to pull requests
+    # If not dry-run (github_ref == default branch):
+    # - Pull requests: only from the same repository, from branches starting with branch-prefix, modified by non-author
+    # - Issues: only with title matching dependency-dashboard-title, modified by non-author
+    # - Or events not related to pull requests or issues
+    # In short: if the event is related to a pull request or an issue, run only if the PR/issue is managed by
+    # Renovate, and the event wasn't already caused by Renovate
     if: >-
       (
+        (inputs.dry-run && inputs.dry-run != 'null' && inputs.dry-run != 'false') && (
+          !github.event.pull_request ||
+          github.event.repository.node_id == github.event.pull_request.head.repo.node_id
+        )
+      ) || (
         (!inputs.dry-run || inputs.dry-run == 'null' || inputs.dry-run == 'false') && (
           (
             !github.event.pull_request && !github.event.issue
@@ -46,13 +60,9 @@ jobs:
             github.event.sender.node_id != github.event.issue.user.node_id
           )
         )
-      ) || (
-        (inputs.dry-run && inputs.dry-run != 'null' && inputs.dry-run != 'false') && (
-          !github.event.pull_request ||
-          github.event.repository.node_id == github.event.pull_request.head.repo.node_id
-        )
       )
 
+    # Should be at job level - so, hopefully, jobs that should be skipped won't queue and cancel other jobs
     concurrency:
       group: renovate${{ (inputs.dry-run && inputs.dry-run != 'null' && inputs.dry-run != 'false') && format('-{0}', github.ref) || '' }}
       cancel-in-progress: false
