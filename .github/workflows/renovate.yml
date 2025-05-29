@@ -1,7 +1,7 @@
 name: renovate
 
 concurrency:
-  group: renovate
+  group: renovate${{ (github.event.pull_request && github.event.action != 'edited') && format('-{0}', github.event_name) || '' }}
   cancel-in-progress: false
 
 on:
