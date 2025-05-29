@@ -24,10 +24,8 @@ jobs:
       options: -u 0:0 --init
 
     if: >-
-      !github.event.pull_request || (
-        !startsWith(github.head_ref, inputs.branch-prefix) &&
-        (github.event_name == 'pull_request_target') == (github.event.pull_request.base.repo.node_id != github.event.pull_request.head.repo.node_id)
-      )
+      !github.event.pull_request ||
+      (github.event_name == 'pull_request_target') == (github.event.pull_request.base.repo.node_id != github.event.pull_request.head.repo.node_id)
 
     steps:
       - uses: octokit/request-action@v2.x

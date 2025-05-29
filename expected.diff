@@ -4,11 +4,12 @@ concurrency:						      <
   group: renovate					      <
   cancel-in-progress: false				      <
   update:						      |	  dry-run:
-      (							      |	      !github.event.pull_request || (
-        !github.event.pull_request && !github.event.issue     |	        !startsWith(github.head_ref, inputs.branch-prefix) &&
-      ) || (						      |	        (github.event_name == 'pull_request_target') == (gith
+      (							      |	      !github.event.pull_request ||
+        !github.event.pull_request && !github.event.issue     |	      (github.event_name == 'pull_request_target') == (github
+      ) || (						      <
         (github.event.pull_request.base.repo.node_id == githu <
         (github.event.issue.title == inputs.dependency-dashbo <
+      )							      <
 							      >	          permission-checks: read
 							      >	          permission-contents: read
 							      >	          permission-workflows: read
