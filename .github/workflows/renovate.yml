@@ -63,8 +63,7 @@ jobs:
             echo "RENOVATE_USE_BASE_BRANCH_CONFIG=merge" >>"$GITHUB_ENV"
           fi
 
-      - id: cache-restore
-        uses: actions/cache/restore@v4
+      - uses: actions/cache@v4
         with:
           path: cache
           key: renovate
@@ -80,8 +79,3 @@ jobs:
           RENOVATE_PLATFORM_COMMIT: 'true'
           RENOVATE_BASE_DIR: ${{ github.workspace }}
           RENOVATE_CACHE_DIR: ${{ github.workspace }}/cache
-
-      - uses: actions/cache/save@v4
-        with:
-          path: cache
-          key: ${{ steps.cache-restore.outputs.cache-primary-key }}
