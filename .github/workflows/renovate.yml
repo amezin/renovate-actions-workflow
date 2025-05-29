@@ -2,6 +2,12 @@ name: renovate
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   pull_request_target:
     types:
       - edited
@@ -13,8 +19,9 @@ on:
 
 jobs:
   reusable:
-    uses: ./.github/workflows/update.yml
+    uses: ./.github/workflows/reusable.yml
     with:
       app-id: 1336158
     secrets:
       private-key: ${{ secrets.SELF_HOSTED_RENOVATE_KEY }}
+    if: ${{ !github.event.repository.fork }}
