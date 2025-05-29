@@ -72,6 +72,7 @@ jobs:
       - run: renovate
         env:
           LOG_LEVEL: debug
+          FORCE_COLOR: '2'
           GITHUB_COM_TOKEN: ${{ github.token }}
           RENOVATE_TOKEN: ${{ github.token }}
           RENOVATE_REPOSITORIES: ${{ github.repository }}
