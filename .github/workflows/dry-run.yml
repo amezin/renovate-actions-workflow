@@ -25,7 +25,7 @@ jobs:
 
     if: >-
       !github.event.pull_request ||
-      (github.event_name == 'pull_request_target') == (github.event.pull_request.base.repo.node_id != github.event.pull_request.head.repo.node_id)
+      github.event.pull_request.base.repo.node_id == github.event.pull_request.head.repo.node_id
 
     steps:
       - uses: octokit/request-action@v2.x
@@ -82,7 +82,5 @@ jobs:
             ${{ format('{0}/actions/workflows/{1}', github.event.repository.html_url, fromJSON(steps.workflow_run.outputs.data).path) }}
           RENOVATE_DEPENDENCY_DASHBOARD_FOOTER: >-
             ${{ format('{0}/actions/workflows/{1}', github.event.repository.html_url, fromJSON(steps.workflow_run.outputs.data).path) }}
-          RENOVATE_BASE_BRANCHES: >-
-            ${{ (github.event.pull_request.base.repo.node_id == github.event.pull_request.head.repo.node_id && github.head_ref || github.base_ref) || github.ref_name }}
-          RENOVATE_USE_BASE_BRANCH_CONFIG: >-
-            ${{ github.event.pull_request.base.repo.node_id == github.event.pull_request.head.repo.node_id && 'merge' || 'none' }}
+          RENOVATE_BASE_BRANCHES: ${{ github.head_ref || github.ref_name }}
+          RENOVATE_USE_BASE_BRANCH_CONFIG: merge

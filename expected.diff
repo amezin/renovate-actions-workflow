@@ -1,11 +1,11 @@
-name: renovate						      |	name: renovate-dry-run
+name: renovate-reusable					      |	name: renovate-dry-run-reusable
 							      <
 concurrency:						      <
   group: renovate					      <
   cancel-in-progress: false				      <
   update:						      |	  dry-run:
       (							      |	      !github.event.pull_request ||
-        !github.event.pull_request && !github.event.issue     |	      (github.event_name == 'pull_request_target') == (github
+        !github.event.pull_request && !github.event.issue     |	      github.event.pull_request.base.repo.node_id == github.e
       ) || (						      <
         (github.event.pull_request.base.repo.node_id == githu <
         (github.event.issue.title == inputs.dependency-dashbo <
@@ -22,7 +22,5 @@ concurrency:						      <
 							      >	          permission-metadata: read
 							      >	          "--use-base-branch-config=$RENOVATE_USE_BASE_BRANCH
 							      >	          --dry-run=full
-							      >	          RENOVATE_BASE_BRANCHES: >-
-							      >	            ${{ (github.event.pull_request.base.repo.node_id 
-							      >	          RENOVATE_USE_BASE_BRANCH_CONFIG: >-
-							      >	            ${{ github.event.pull_request.base.repo.node_id =
+							      >	          RENOVATE_BASE_BRANCHES: ${{ github.head_ref || gith
+							      >	          RENOVATE_USE_BASE_BRANCH_CONFIG: merge
