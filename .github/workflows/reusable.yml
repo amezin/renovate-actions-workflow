@@ -94,6 +94,32 @@ jobs:
           permission-members: read
           permission-metadata: read
 
+      - run: |
+          echo "$PROBLEM_MATCHER" >"$RUNNER_TEMP/problem-matcher.json"
+          echo "::add-matcher::$RUNNER_TEMP/problem-matcher.json"
+        env:
+          PROBLEM_MATCHER: |
+            {
+              "problemMatcher": [
+                {
+                  "owner": "renovate-warn",
+                  "severity": "warning",
+                  "pattern": [{
+                    "regexp": "^(?:\\\\x1b\\\\[[0-9;]*m?)?\\\\s*WARN(?:\\\\x1b\\\\[[0-9;]*m?)?:\\\\s*(.*)(?:$|\\\\x1b\\\\[[0-9;]*m?)",
+                    "message": 1
+                  }]
+                },
+                {
+                  "owner": "renovate-error",
+                  "severity": "error",
+                  "pattern": [{
+                    "regexp": "^(?:\\\\x1b\\\\[[0-9;]*m?)?\\\\s*ERROR(?:\\\\x1b\\\\[[0-9;]*m?)?:\\\\s*(.*)(?:$|\\\\x1b\\\\[[0-9;]*m?)",
+                    "message": 1
+                  }]
+                }
+              ]
+            }
+
       - run: >-
           renovate
           "--branch-prefix=$RENOVATE_BRANCH_PREFIX"
