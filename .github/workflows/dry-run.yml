@@ -1,4 +1,4 @@
-name: renovate-dry-run
+name: renovate-dry-run-reusable
 
 on:
   workflow_call:

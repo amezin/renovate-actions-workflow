@@ -1,4 +1,4 @@
-name: renovate
+name: renovate-reusable
 
 concurrency:
   group: renovate
