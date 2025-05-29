@@ -86,7 +86,8 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: cache
-          key: renovate
+          key: renovate-${{ github.run_id }}
+          restore-keys: renovate
 
       - id: token
         uses: actions/create-github-app-token@v2
