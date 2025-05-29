@@ -19,15 +19,6 @@ on:
   schedule:
     - cron: '0/30 * * * *'
 
-permissions:
-  actions: write
-  checks: write
-  contents: write
-  issues: write
-  pull-requests: write
-  security-events: read
-  statuses: write
-
 jobs:
   run:
     runs-on: ubuntu-22.04
@@ -36,20 +27,24 @@ jobs:
       options: -u 0:0
 
     if: >-
-      github.event.issue.title == 'Dependency Dashboard' ||
-      github.event_name == 'schedule' ||
-      github.event_name == 'workflow_dispatch' || (
-        github.event_name == 'pull_request' &&
-        github.event.pull_request.base.repo.node_id == github.event.pull_request.head.repo.node_id &&
-        (github.event.action == 'edited') == startsWith(github.head_ref, 'renovate/')
-      ) || (
-        github.event_name == 'pull_request_target' &&
-        github.event.pull_request.base.repo.node_id != github.event.pull_request.head.repo.node_id &&
-        github.event.action != 'edited'
+      !github.event.repository.fork &&
+      (
+        github.event.issue.title == 'Dependency Dashboard' ||
+        github.event_name == 'schedule' ||
+        github.event_name == 'workflow_dispatch' || (
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.base.repo.node_id == github.event.pull_request.head.repo.node_id &&
+          (github.event.action == 'edited') == startsWith(github.head_ref, 'renovate/')
+        ) || (
+          github.event_name == 'pull_request_target' &&
+          github.event.pull_request.base.repo.node_id != github.event.pull_request.head.repo.node_id &&
+          github.event.action != 'edited'
+        )
       )
 
     steps:
-      - run: |
+      - id: config
+        run: |
           if [ -n "$GITHUB_HEAD_REF" ]; then
             echo "RENOVATE_DRY_RUN=full" >>"$GITHUB_ENV"
             if [ "$(jq .pull_request.base.repo.node_id "$GITHUB_EVENT_PATH")" = "$(jq .pull_request.head.repo.node_id "$GITHUB_EVENT_PATH")" ]; then
@@ -58,10 +53,14 @@ jobs:
               echo "RENOVATE_BASE_BRANCHES=$GITHUB_BASE_REF" >>"$GITHUB_ENV"
             fi
             echo "RENOVATE_USE_BASE_BRANCH_CONFIG=merge" >>"$GITHUB_ENV"
+            echo "permission=read" >>"$GITHUB_OUTPUT"
           elif [ "$GITHUB_REF_NAME" != "$(jq .repository.default_branch "$GITHUB_EVENT_PATH")" ]; then
             echo "RENOVATE_DRY_RUN=full" >>"$GITHUB_ENV"
             echo "RENOVATE_BASE_BRANCHES=$GITHUB_REF_NAME" >>"$GITHUB_ENV"
             echo "RENOVATE_USE_BASE_BRANCH_CONFIG=merge" >>"$GITHUB_ENV"
+            echo "permission=read" >>"$GITHUB_OUTPUT"
+          else
+            echo "permission=write" >>"$GITHUB_OUTPUT"
           fi
 
       - uses: actions/cache@v4
@@ -69,12 +68,28 @@ jobs:
           path: cache
           key: renovate
 
+      - id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: 1336158
+          private-key: ${{ secrets.SELF_HOSTED_RENOVATE_KEY }}
+          permission-checks: ${{ steps.config.outputs.permission }}
+          permission-contents: ${{ steps.config.outputs.permission }}
+          permission-workflows: ${{ steps.config.outputs.permission }}
+          permission-statuses: ${{ steps.config.outputs.permission }}
+          permission-issues: ${{ steps.config.outputs.permission }}
+          permission-pull-requests: ${{ steps.config.outputs.permission }}
+          permission-administration: read
+          permission-vulnerability-alerts: read
+          permission-members: read
+          permission-metadata: read
+
       - run: renovate
         env:
           LOG_LEVEL: debug
           FORCE_COLOR: '2'
-          GITHUB_COM_TOKEN: ${{ github.token }}
-          RENOVATE_TOKEN: ${{ github.token }}
+          GITHUB_COM_TOKEN: ${{ steps.token.outputs.token }}
+          RENOVATE_TOKEN: ${{ steps.token.outputs.token }}
           RENOVATE_REPOSITORIES: ${{ github.repository }}
           RENOVATE_REPORT_TYPE: logging
           RENOVATE_BASE_DIR: ${{ github.workspace }}
