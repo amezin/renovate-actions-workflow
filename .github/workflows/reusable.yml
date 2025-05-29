@@ -1,9 +1,5 @@
 name: renovate-reusable
 
-concurrency:
-  group: renovate${{ (inputs.dry-run && inputs.dry-run != 'null' && inputs.dry-run != 'false') && format('-{0}', github.ref) || '' }}
-  cancel-in-progress: false
-
 on:
   workflow_call:
     inputs:
@@ -56,6 +52,10 @@ jobs:
           github.event.repository.node_id == github.event.pull_request.head.repo.node_id
         )
       )
+
+    concurrency:
+      group: renovate${{ (inputs.dry-run && inputs.dry-run != 'null' && inputs.dry-run != 'false') && format('-{0}', github.ref) || '' }}
+      cancel-in-progress: false
 
     steps:
       - run: |
