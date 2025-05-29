@@ -36,6 +36,16 @@ jobs:
       )
 
     steps:
+      - uses: octokit/request-action@v2.x
+        id: workflow_run
+        with:
+          route: GET /repos/{owner}/{repo}/actions/runs/{run_id}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          INPUT_OWNER: ${{ github.repository_owner }}
+          INPUT_REPO: ${{ github.event.repository.name }}
+          INPUT_RUN_ID: ${{ github.run_id }}
+
       - uses: actions/cache@v4
         with:
           path: cache
@@ -64,3 +74,7 @@ jobs:
           RENOVATE_CACHE_DIR: ${{ github.workspace }}/cache
           RENOVATE_BRANCH_PREFIX: ${{ inputs.branch-prefix }}
           RENOVATE_DEPENDENCY_DASHBOARD_TITLE: ${{ inputs.dependency-dashboard-title }}
+          RENOVATE_PR_FOOTER: >-
+            ${{ format('{0}/actions/workflows/{1}', github.event.repository.html_url, fromJSON(steps.workflow_run.outputs.data).path) }}
+          RENOVATE_DEPENDENCY_DASHBOARD_FOOTER: >-
+            ${{ format('{0}/actions/workflows/{1}', github.event.repository.html_url, fromJSON(steps.workflow_run.outputs.data).path) }}
