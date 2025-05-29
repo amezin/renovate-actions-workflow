@@ -27,9 +27,6 @@ jobs:
 
     - uses: github/codeql-action/init@v3
       with:
-        languages: javascript-typescript,actions
-        config: |
-          paths-ignore:
-            - dist
+        languages: actions
 
     - uses: github/codeql-action/analyze@v3
