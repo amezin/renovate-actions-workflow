@@ -17,7 +17,7 @@ on:
         default: ${{ github.ref_name == github.event.repository.default_branch && 'null' || 'full' }}
       log-level:
         type: string
-        default: ''
+        default: debug
     secrets:
       private-key:
         required: true
@@ -140,7 +140,7 @@ jobs:
 
         env:
           FORCE_COLOR: '2'
-          LOG_LEVEL: ${{ inputs.log-level || (runner.debug && 'debug' || 'info') }}
+          LOG_LEVEL: ${{ inputs.log-level }}
           GITHUB_COM_TOKEN: ${{ steps.token.outputs.token }}
           RENOVATE_TOKEN: ${{ steps.token.outputs.token }}
           RENOVATE_REPOSITORIES: ${{ github.repository }}
